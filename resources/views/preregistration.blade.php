@@ -107,9 +107,7 @@
             <li class="sidebar-brand"><a href="#page-top">Navigation</a></li>
             <li class="sidebar-nav-item"><a href="/">Home</a></li>
             <li class="sidebar-nav-item"><a href="#services">Services</a></li>
-            <!--             <li class="sidebar-nav-item"><a href="/login">Login</a></li>
-            <li class="sidebar-nav-item"><a href="/register">Register</a></li> -->
-            <li class="sidebar-nav-item"><a href="/preregistration">Pre registration</a></li>
+            <li class="sidebar-nav-item"><a href="/preregistration">Application Form</a></a></li>
             <li class="sidebar-nav-item"><a href="#contact">Contact</a></li>
         </ul>
     </nav>

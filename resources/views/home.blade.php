@@ -141,54 +141,65 @@
             </div>
         </div>
 
-
-        <div class="row">
-            <div class="col-lg-12 col-md-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h4>Clients per Month Predection</h4>
-                    </div>
+        <div class="accordion" id="chartAccordion">
+            <!-- Clients per Month Prediction -->
+            <div class="card">
+                <div class="card-header" id="headingOne">
+                    <h4 class="mb-0">
+                        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#monthlyAverageChartSection" aria-expanded="true" aria-controls="monthlyAverageChartSection">
+                            Clients per Month Prediction
+                        </button>
+                    </h4>
+                </div>
+                <div id="monthlyAverageChartSection" class="collapse" aria-labelledby="headingOne" data-parent="#chartAccordion">
                     <div class="card-body">
                         <canvas id="monthlyAverageChart"></canvas>
                     </div>
                 </div>
             </div>
-        </div>
 
-
-        <div class="row">
-            <div class="col-lg-12 col-md-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h4>Services per Barangay Prediction</h4>
-                    </div>
+            <!-- Services per Barangay Prediction -->
+            <div class="card">
+                <div class="card-header" id="headingTwo">
+                    <h4 class="mb-0">
+                        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#barangayServiceChartSection" aria-expanded="false" aria-controls="barangayServiceChartSection">
+                            Services per Barangay Prediction
+                        </button>
+                    </h4>
+                </div>
+                <div id="barangayServiceChartSection" class="collapse" aria-labelledby="headingTwo" data-parent="#chartAccordion">
                     <div class="card-body">
                         <canvas id="barangayServiceChart" width="400" height="200"></canvas>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="row">
-            <div class="col-lg-12 col-md-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h4>Average Income</h4>
-                    </div>
+            <!-- Average Income -->
+            <div class="card">
+                <div class="card-header" id="headingThree">
+                    <h4 class="mb-0">
+                        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#averageIncomeChartSection" aria-expanded="false" aria-controls="averageIncomeChartSection">
+                            Average Income
+                        </button>
+                    </h4>
+                </div>
+                <div id="averageIncomeChartSection" class="collapse" aria-labelledby="headingThree" data-parent="#chartAccordion">
                     <div class="card-body">
                         <canvas id="averageIncomeChart" width="400" height="200"></canvas>
                     </div>
                 </div>
             </div>
-        </div>
 
-
-        <div class="row">
-            <div class="col-lg-12 col-md-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h4>Prediction Average Income</h4>
-                    </div>
+            <!-- Prediction Average Income -->
+            <div class="card">
+                <div class="card-header" id="headingFour">
+                    <h4 class="mb-0">
+                        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#PredictionAverageIncomeChartSection" aria-expanded="false" aria-controls="PredictionAverageIncomeChartSection">
+                            Prediction Average Income
+                        </button>
+                    </h4>
+                </div>
+                <div id="PredictionAverageIncomeChartSection" class="collapse" aria-labelledby="headingFour" data-parent="#chartAccordion">
                     <div class="card-body">
                         <canvas id="PredictionAverageIncomeChart" width="400" height="200"></canvas>
                     </div>
@@ -200,8 +211,18 @@
 </div>
 </section>
 </div>
+
 @push('scripts')
 <script>
+    function toggleSection(sectionId) {
+        const section = document.getElementById(sectionId);
+        if (section.style.display === "none") {
+            section.style.display = "block";
+        } else {
+            section.style.display = "none";
+        }
+    }
+
     const incomeData = {
         '100 PHP - 500 PHP': 0,
         '500 PHP - 1000 PHP': 0,
