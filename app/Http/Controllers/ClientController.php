@@ -134,8 +134,8 @@ class ClientController extends Controller
             $nextNumber = '0000001';
         }
 
-        $controlNumber = "APL " . $nextNumber;
-        $validatedData['control_number'] = $controlNumber;
+        $newControlNumber = 'CSW-' . strtoupper(Str::random(8));
+        $validatedData['control_number'] = $newControlNumber;
 
         // Handle optional fields for nationality and religion
         if ($request->input('nationality') === 'Other') {
@@ -532,7 +532,7 @@ class ClientController extends Controller
             }
 
             // Generate a new control number and new client ID
-            $newControlNumber = 'CN-' . strtoupper(Str::random(8));
+            $newControlNumber = 'CSW-' . strtoupper(Str::random(8));
 
             // Insert the duplicated client record into the clients table
             $newClientId = DB::table('clients')->insertGetId([
