@@ -38,6 +38,7 @@ Route::middleware(['auth'])->group(function () {
 
     //fetching social worker
     Route::get('/social-worker', [ClientController::class, 'caselist'])->name('social-worker.index');
+    Route::post('/duplicate-client/{id}', [ClientController::class, 'duplicateClient']);
 
     Route::get('/social-worker/{clientId}', [ClientController::class, 'show'])->name('social-worker.index')->middleware('social');
     // generate pdf

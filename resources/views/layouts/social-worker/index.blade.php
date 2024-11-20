@@ -15,53 +15,6 @@
             </div>
             <div class="section-body">
                 <div class="table-responsive">
-
-                    <!-- Filter Section -->
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <label for="filterAge">Age</label>
-                            <select id="filterAge" class="form-control">
-                                <option value="">Select Age</option>
-                                <option value="18-25">18-25</option>
-                                <option value="26-35">26-35</option>
-                                <option value="36-45">36-45</option>
-                                <option value="46-55">46-55</option>
-                                <option value="56+">56+</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="filterSex">Sex</label>
-                            <select id="filterSex" class="form-control">
-                                <option value="">Select Sex</option>
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="filterCivilStatus">Civil Status</label>
-                            <select id="filterCivilStatus" class="form-control">
-                                <option value="">Select Status</option>
-                                <option value="Single">Single</option>
-                                <option value="Married">Married</option>
-                                <option value="Widowed">Widowed</option>
-                                <option value="Separated">Separated</option>
-                                <option value="Divorced">Divorced</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Search Input -->
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <div class="input-group">
-                                <input type="text" id="searchInput" class="form-control" placeholder="Case Listing ID">
-                                <div class="input-group-append">
-                                    <button class="btn btn-primary" style="margin-left:5px;" type="submit">Search</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Table -->
                     <table id="clientTable" class="table table-bordered">
                         <thead>
@@ -128,36 +81,6 @@
             </div>
         </section>
     </div>
-
-    <script>
-        $(document).ready(function() {
-            var table = $('#clientTable').DataTable();
-
-            // Filter by Age
-            $('#filterAge').change(function() {
-                var ageRange = $(this).val();
-                table.column(5).search(ageRange).draw(); // Assuming Age is column 5
-            });
-
-            // Filter by Sex
-            $('#filterSex').change(function() {
-                var sex = $(this).val();
-                table.column(6).search(sex).draw(); // Assuming Sex is column 6
-            });
-
-            // Filter by Civil Status
-            $('#filterCivilStatus').change(function() {
-                var civilStatus = $(this).val();
-                table.column(8).search(civilStatus).draw(); // Assuming Civil Status is column 8
-            });
-
-            // Filter by Case Status
-            $('#filterCaseStatus').change(function() {
-                var caseStatus = $(this).val();
-                table.column(11).search(caseStatus).draw(); // Assuming Case Status is column 11
-            });
-        });
-    </script>
 
 	<script>
 		document.getElementById('searchInput').addEventListener('input', function() {

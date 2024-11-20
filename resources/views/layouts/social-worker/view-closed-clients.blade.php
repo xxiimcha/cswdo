@@ -34,13 +34,13 @@
                                     <th>Nationality</th>
                                     <th>Contact Number</th>
                                     <th>Case Status</th>
-                                    <th>View</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="searchResults">
                                 @foreach ($clients as $client)
                                 <tr>
-                                    <td class="controlnumber">{{$client->control_number}}</td>
+                                    <td class="controlnumber">{{ $client->control_number }}</td>
                                     <td class="fullname">{{ $client->first_name }} {{ $client->last_name }}</td>
                                     <td class="suffix">{{ $client->suffix }}</td>
                                     <td class="age">{{ $client->age }}</td>
@@ -50,21 +50,23 @@
                                     <td class="contactnumber">{{ $client->contact_number }}</td>
                                     <td class="case-status" style="padding: 5px; text-align: center;">
                                         <span style="
-                background-color: {{ $client->tracking == 'Approve' ? 'green' : 'transparent' }};
-                color: white;
-                padding: 2px 4px;
-                border-radius: 4px;">
+                                            background-color: {{ $client->tracking == 'Approve' ? 'green' : 'transparent' }};
+                                            color: white;
+                                            padding: 2px 4px;
+                                            border-radius: 4px;">
                                             {{ $client->tracking == 'Approve' ? 'Closed' : 'Not Tracking' }}
                                         </span>
                                     </td>
                                     <td>
-                                        <!-- Main view file where your button is -->
+                                        <!-- View Button -->
                                         <button type="button" class="btn btn-success" data-toggle="modal" data-target="#viewClientModal{{ $client->id }}">
                                             <i class="fas fa-eye"></i>
                                         </button>
-
+                                        <!-- Duplicate Record Button -->
+                                        <button type="button" class="btn btn-primary" onclick="duplicateRecord({{ $client->id }})">
+                                            <i class="fas fa-copy"></i> Duplicate Record
+                                        </button>
                                     </td>
-
                                 </tr>
                                 @endforeach
                             </tbody>
@@ -75,10 +77,42 @@
         </div>
     </section>
     @include('layouts.social-worker.view-modal', ['client' => $client]) <!-- Pass the client variable -->
+
+    <!-- Success Message -->
+    <div id="successMessage" class="alert alert-success" style="display: none;">
+        Record successfully duplicated!
+    </div>
+
     <script>
-        function generatePdf(clientId) {
-            window.location.href = '/generate-pdf/' + clientId;
+        // Function to handle record duplication
+        function duplicateRecord(clientId) {
+            if (confirm("Are you sure you want to duplicate this record?")) {
+                fetch(`/duplicate-client/${clientId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('successMessage').style.display = 'block';
+                        setTimeout(() => {
+                            document.getElementById('successMessage').style.display = 'none';
+                        }, 3000);
+                    } else {
+                        alert("An error occurred while duplicating the record.");
+                    }
+                })
+                .catch(error => {
+                    console.error("Error duplicating record:", error);
+                    alert("An error occurred while duplicating the record.");
+                });
+            }
         }
+
+        // Search Functionality
         document.getElementById('searchInput').addEventListener('input', function() {
             const searchTerm = this.value.toLowerCase();
             const tableRows = document.querySelectorAll('#searchResults tr');
