@@ -70,6 +70,12 @@
                 </a>
             </li>
             @endif
+            <li class="menu-header">Reports</li>
+            <li class="{{ Request::is('reports') ? 'active' : '' }}">
+                <a class="nav-link" href="{{ url('reports') }}" style="color: white;">
+                    <i class="fas fa-chart-line"></i> <span>Reports</span>
+                </a>
+            </li>
 
             <li class="menu-header">Profile</li>
             <li class="{{ Request::is('profile/edit') ? 'active' : '' }}">

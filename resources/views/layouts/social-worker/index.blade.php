@@ -1,19 +1,18 @@
 	@extends('layouts.app')
 	@section('title', 'Access Data')
 	@section('content')
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.12.1/css/jquery.dataTables.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap4.min.css">
 
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap4.min.js"></script>
-
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <div class="main-content">
         <section class="section">
             <div class="section-header">
                 <h1>Access Data</h1>
             </div>
             <div class="section-body">
+                <div class="mb-3">
+                    <!-- Search Box -->
+                    <input type="text" id="searchInput" placeholder="Search here..." class="form-control">
+                </div>
                 <div class="table-responsive">
                     <!-- Table -->
                     <table id="clientTable" class="table table-bordered">
@@ -78,6 +77,20 @@
                         </tbody>
                     </table>
                 </div>
+                <!-- Pagination Controls -->
+                <div id="paginationControls" class="mt-3 d-flex justify-content-between align-items-center">
+                    <div>
+                        <label for="rowsPerPage">Rows per page:</label>
+                        <select id="rowsPerPage" class="form-control d-inline-block" style="width: auto;">
+                            <option value="5">5</option>
+                            <option value="10" selected>10</option>
+                            <option value="20">20</option>
+                        </select>
+                    </div>
+                    <div id="pageNumbers" class="pagination">
+                        <!-- Pagination buttons will be generated dynamically -->
+                    </div>
+                </div>
             </div>
         </section>
     </div>
@@ -113,24 +126,10 @@
 			});
 		});
 	</script>
-	<!-- General CSS Files -->
-    <script>
-        $(document).ready(function() {
-            $('#clientTable').DataTable({
-                "paging": true,
-                "lengthChange": true,
-                "searching": true,
-                "ordering": true,
-                "info": true,
-                "autoWidth": false,
-                "responsive": true,
-                "pageLength": 10 // Optional: Set initial page length
-            });
-        });
-    </script>
-	<!-- Template CSS -->
-	<link rel="stylesheet" href="/assets/css/style.css">
-	<link rel="stylesheet" href="/assets/css/components.css">
+	<!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
 
 	<style>
 		.order-tracker {
@@ -1431,8 +1430,6 @@
 	</div>
 	</div>
 	@endforeach
-
-	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 	<script>
 		function submitEditForm(clientId) {
@@ -2007,10 +2004,85 @@
 
 	@section('scripts')
 	<!-- Bootstrap JS and dependencies -->
-	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
 	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <!-- Custom Pagination Scripts -->
+    <script>
+        $(document).ready(function () {
+            const $table = $('#clientTable');
+            const $tbody = $table.find('tbody');
+            const $searchInput = $('#searchInput');
+            const $rowsPerPage = $('#rowsPerPage');
+            const $pageNumbers = $('#pageNumbers');
+
+            let rowsPerPage = parseInt($rowsPerPage.val());
+            let currentPage = 1;
+
+            const rows = $tbody.find('tr');
+            const totalRows = rows.length;
+
+            function renderTable() {
+                const startIndex = (currentPage - 1) * rowsPerPage;
+                const endIndex = startIndex + rowsPerPage;
+
+                rows.hide();
+                rows.slice(startIndex, endIndex).show();
+            }
+
+            function renderPagination() {
+                const totalPages = Math.ceil(totalRows / rowsPerPage);
+
+                $pageNumbers.empty();
+                for (let i = 1; i <= totalPages; i++) {
+                    const $button = $('<button>')
+                        .addClass('btn btn-outline-primary mx-1')
+                        .text(i)
+                        .on('click', function () {
+                            currentPage = i;
+                            renderTable();
+                            updateActiveButton();
+                        });
+
+                    if (i === currentPage) $button.addClass('active');
+
+                    $pageNumbers.append($button);
+                }
+            }
+
+            function updateActiveButton() {
+                $pageNumbers.find('button').removeClass('active');
+                $pageNumbers.find('button').eq(currentPage - 1).addClass('active');
+            }
+
+            // Handle Rows Per Page Change
+            $rowsPerPage.on('change', function () {
+                rowsPerPage = parseInt($(this).val());
+                currentPage = 1; // Reset to the first page
+                renderTable();
+                renderPagination();
+            });
+
+            // Search Filtering
+            $searchInput.on('input', function () {
+                const searchTerm = this.value.toLowerCase();
+                rows.each(function () {
+                    const rowText = $(this).text().toLowerCase();
+                    $(this).toggle(rowText.includes(searchTerm));
+                });
+
+                // Update pagination after filtering
+                rowsPerPage = parseInt($rowsPerPage.val());
+                currentPage = 1;
+                renderTable();
+                renderPagination();
+            });
+
+            // Initial Render
+            renderTable();
+            renderPagination();
+        });
+    </script>
 	@endsection
 	@endsection

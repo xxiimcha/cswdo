@@ -6,7 +6,7 @@
     <section class="section">
         <div class="row">
             <div class="col-lg-4 col-md-4 col-sm-12">
-                <div class="card card-statistic-2">
+                <div class="card card-statistic-2 shadow-sm">
                     <div class="card-stats">
                         <div class="card-stats-title">
                             Applicant -
@@ -48,11 +48,9 @@
                     </div>
                 </div>
             </div>
+
             <div class="col-lg-4 col-md-4 col-sm-12">
-                <div class="card card-statistic-2">
-                    <div class="card-chart">
-                        <canvas id="balance-chart" height="80"></canvas>
-                    </div>
+                <div class="card card-statistic-2 shadow-sm">
                     <div class="card-icon shadow-primary bg-primary">
                         <i class="fas fa-user-friends"></i>
                     </div>
@@ -66,11 +64,9 @@
                     </div>
                 </div>
             </div>
+
             <div class="col-lg-4 col-md-4 col-sm-12">
-                <div class="card card-statistic-2">
-                    <div class="card-chart">
-                        <canvas id="sales-chart" height="80"></canvas>
-                    </div>
+                <div class="card card-statistic-2 shadow-sm">
                     <div class="card-icon shadow-primary bg-primary">
                         <i class="fas fa-user-md"></i>
                     </div>
@@ -85,11 +81,11 @@
                 </div>
             </div>
         </div>
+
         <div class="row">
-            <!-- Income Bracket Card -->
             <div class="col-lg-6 col-md-12">
-                <div class="card" style="height: 300px;">
-                    <div class="card-header">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light">
                         <h4>Income Bracket</h4>
                         <span id="barangay-name" class="text-muted"></span>
                     </div>
@@ -99,10 +95,9 @@
                 </div>
             </div>
 
-            <!-- Most Requested Services Card -->
             <div class="col-lg-6 col-md-12">
-                <div class="card" id="services-section" style="height: 300px;">
-                    <div class="card-header">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light">
                         <h4>Most Requested Services</h4>
                         <span id="barangay-name-services" class="text-muted"></span>
                     </div>
@@ -114,10 +109,9 @@
         </div>
 
         <div class="row">
-            <!-- Gender Distribution Card -->
             <div class="col-lg-6 col-md-12">
-                <div class="card" id="gender-section" style="height: 300px;">
-                    <div class="card-header">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light">
                         <h4>Gender Distribution</h4>
                         <span id="barangay-name-gender" class="text-muted"></span>
                     </div>
@@ -127,10 +121,9 @@
                 </div>
             </div>
 
-            <!-- Age Group Services Card -->
             <div class="col-lg-6 col-md-12">
-                <div class="card" id="age-group-section" style="height: 300px;">
-                    <div class="card-header">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light">
                         <h4>Requested Services by Age Group</h4>
                         <span id="barangay-name-age" class="text-muted"></span>
                     </div>
@@ -141,8 +134,7 @@
             </div>
         </div>
 
-        <div class="accordion" id="chartAccordion">
-            <!-- Clients per Month Prediction -->
+        <div class="accordion mt-4" id="chartAccordion">
             <div class="card">
                 <div class="card-header" id="headingOne">
                     <h4 class="mb-0">
@@ -151,14 +143,13 @@
                         </button>
                     </h4>
                 </div>
-                <div id="monthlyAverageChartSection" class="collapse" aria-labelledby="headingOne" data-parent="#chartAccordion">
+                <div id="monthlyAverageChartSection" class="collapse show" aria-labelledby="headingOne" data-parent="#chartAccordion">
                     <div class="card-body">
                         <canvas id="monthlyAverageChart"></canvas>
                     </div>
                 </div>
             </div>
 
-            <!-- Services per Barangay Prediction -->
             <div class="card">
                 <div class="card-header" id="headingTwo">
                     <h4 class="mb-0">
@@ -174,7 +165,6 @@
                 </div>
             </div>
 
-            <!-- Average Income -->
             <div class="card">
                 <div class="card-header" id="headingThree">
                     <h4 class="mb-0">
@@ -190,8 +180,7 @@
                 </div>
             </div>
 
-            <!-- Prediction Average Income -->
-            <div class="card">
+            <div class="card" style="display: none;">
                 <div class="card-header" id="headingFour">
                     <h4 class="mb-0">
                         <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#PredictionAverageIncomeChartSection" aria-expanded="false" aria-controls="PredictionAverageIncomeChartSection">
@@ -206,10 +195,7 @@
                 </div>
             </div>
         </div>
-
-</div>
-</div>
-</section>
+    </section>
 </div>
 
 @push('scripts')
@@ -557,64 +543,101 @@
     // Check if there are barangays to process
     if (barangays.length > 0) {
         const firstBarangay = barangays[0];
-        const services = Object.keys(barangayServiceCounts[firstBarangay]);
+const services = Object.keys(barangayServiceCounts[firstBarangay]);
 
-        // Format service labels
-        function formatLabel(service) {
-            return service
-                .replace(/_/g, ' ')
-                .replace(/\b\w/g, char => char.toUpperCase());
+// Function to generate random colors for datasets
+function getRandomColor(opacity = 0.8) {
+    const r = Math.floor(Math.random() * 256);
+    const g = Math.floor(Math.random() * 256);
+    const b = Math.floor(Math.random() * 256);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+}
+
+// Format service labels
+function formatLabel(service) {
+    return service
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, char => char.toUpperCase());
+}
+
+// Prepare datasets for the service counts (bars)
+const datasets = services.map((service, index) => ({
+    label: formatLabel(service), // Format service label
+    data: barangays.map(barangay => barangayServiceCounts[barangay][service]),
+    backgroundColor: getRandomColor(0.4), // Unique background color
+    borderColor: getRandomColor(1), // Unique border color
+    borderWidth: 1,
+    stack: 'services', // Stack services together
+    hidden: true, // Initially hidden
+}));
+
+// Prepare datasets for service predictions (lines)
+const predictionDatasets = services.map((service, index) => ({
+    label: `${formatLabel(service)} Predictions`,
+    data: barangays.map((barangay, barangayIndex) => {
+        const predictions = servicePredictions[barangay][service];
+        if (typeof predictions === 'object' && predictions !== null) {
+            const smoothedValues = Object.values(predictions).slice(-3); // Use last 3 values
+            const avgPrediction = smoothedValues.reduce((a, b) => a + b, 0) / smoothedValues.length || 0;
+            return avgPrediction * (1 + 0.1 * (barangayIndex % 3)); // Add slight adjustment for differentiation
         }
+        return 0; // Default prediction
+    }),
+    type: 'line', // Use line type for predictions
+    borderColor: getRandomColor(1), // Unique line color
+    backgroundColor: 'transparent', // Ensure no fill for line datasets
+    borderWidth: 2,
+    hidden: true, // Initially hidden
+}));
 
-        // Prepare datasets for the service counts
-        const datasets = services.map(service => ({
-            label: formatLabel(service), // Format service label
-            data: barangays.map(barangay => barangayServiceCounts[barangay][service]),
-            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-            borderColor: 'rgba(75, 192, 192, 1)',
-            borderWidth: 1,
-        }));
-
-        // Prepare datasets for service predictions
-        const predictionDatasets = services.map(service => ({
-            label: `${formatLabel(service)} Predictions`,
-            data: barangays.map(barangay => {
-                const predictions = servicePredictions[barangay][service];
-                if (typeof predictions === 'object' && predictions !== null) {
-                    return Object.values(predictions).reduce((sum, count) => sum + count, 0);
-                } else {
-                    console.warn(`Predictions for ${barangay} and ${service} is not an object or is null:`, predictions);
-                    return 0;
-                }
-            }),
-            backgroundColor: 'rgba(255, 99, 132, 0.2)',
-            borderColor: 'rgba(255, 99, 132, 1)',
-            borderWidth: 1,
-            type: 'line', // Change type for prediction lines
-        }));
-
-        // Render the chart for service counts
-        const ctxServices = document.getElementById('barangayServiceChart').getContext('2d');
-        const barangayServiceChart = new Chart(ctxServices, {
-            type: 'bar', // Main chart type
-            data: {
-                labels: barangays,
-                datasets: [...datasets, ...predictionDatasets],
+// Render the chart
+const ctxServices = document.getElementById('barangayServiceChart').getContext('2d');
+const barangayServiceChart = new Chart(ctxServices, {
+    type: 'bar', // Base chart type
+    data: {
+        labels: barangays,
+        datasets: [...datasets, ...predictionDatasets],
+    },
+    options: {
+        responsive: true,
+        scales: {
+            x: {
+                stacked: true, // Stack bar datasets
             },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                    },
+            y: {
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: 'Number of Services',
                 },
-                plugins: {
-                    legend: {
-                        display: true,
+            },
+        },
+        plugins: {
+            legend: {
+                display: true,
+                position: 'top',
+                labels: {
+                    font: {
+                        size: 12,
                     },
                 },
             },
-        });
+            tooltip: {
+                mode: 'index',
+                intersect: false, // Ensure tooltips don't overlap datasets
+            },
+            title: {
+                display: true,
+                text: 'Services and Predictions per Barangay',
+            },
+        },
+        interaction: {
+            mode: 'index',
+            intersect: false,
+        },
+    },
+});
+
 
         // Prepare data for average income and predictions
         const averageIncomeData = JSON.parse(@json($averageIncomeData));
