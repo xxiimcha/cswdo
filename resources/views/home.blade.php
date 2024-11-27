@@ -543,100 +543,100 @@
     // Check if there are barangays to process
     if (barangays.length > 0) {
         const firstBarangay = barangays[0];
-const services = Object.keys(barangayServiceCounts[firstBarangay]);
+        const services = Object.keys(barangayServiceCounts[firstBarangay]);
 
-// Function to generate random colors for datasets
-function getRandomColor(opacity = 0.8) {
-    const r = Math.floor(Math.random() * 256);
-    const g = Math.floor(Math.random() * 256);
-    const b = Math.floor(Math.random() * 256);
-    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
-}
-
-// Format service labels
-function formatLabel(service) {
-    return service
-        .replace(/_/g, ' ')
-        .replace(/\b\w/g, char => char.toUpperCase());
-}
-
-// Prepare datasets for the service counts (bars)
-const datasets = services.map((service, index) => ({
-    label: formatLabel(service), // Format service label
-    data: barangays.map(barangay => barangayServiceCounts[barangay][service]),
-    backgroundColor: getRandomColor(0.4), // Unique background color
-    borderColor: getRandomColor(1), // Unique border color
-    borderWidth: 1,
-    stack: 'services', // Stack services together
-    hidden: true, // Initially hidden
-}));
-
-// Prepare datasets for service predictions (lines)
-const predictionDatasets = services.map((service, index) => ({
-    label: `${formatLabel(service)} Predictions`,
-    data: barangays.map((barangay, barangayIndex) => {
-        const predictions = servicePredictions[barangay][service];
-        if (typeof predictions === 'object' && predictions !== null) {
-            const smoothedValues = Object.values(predictions).slice(-3); // Use last 3 values
-            const avgPrediction = smoothedValues.reduce((a, b) => a + b, 0) / smoothedValues.length || 0;
-            return avgPrediction * (1 + 0.1 * (barangayIndex % 3)); // Add slight adjustment for differentiation
+        // Function to generate random colors for datasets
+        function getRandomColor(opacity = 0.8) {
+            const r = Math.floor(Math.random() * 256);
+            const g = Math.floor(Math.random() * 256);
+            const b = Math.floor(Math.random() * 256);
+            return `rgba(${r}, ${g}, ${b}, ${opacity})`;
         }
-        return 0; // Default prediction
-    }),
-    type: 'line', // Use line type for predictions
-    borderColor: getRandomColor(1), // Unique line color
-    backgroundColor: 'transparent', // Ensure no fill for line datasets
-    borderWidth: 2,
-    hidden: true, // Initially hidden
-}));
 
-// Render the chart
-const ctxServices = document.getElementById('barangayServiceChart').getContext('2d');
-const barangayServiceChart = new Chart(ctxServices, {
-    type: 'bar', // Base chart type
-    data: {
-        labels: barangays,
-        datasets: [...datasets, ...predictionDatasets],
-    },
-    options: {
-        responsive: true,
-        scales: {
-            x: {
-                stacked: true, // Stack bar datasets
+        // Format service labels
+        function formatLabel(service) {
+            return service
+                .replace(/_/g, ' ')
+                .replace(/\b\w/g, char => char.toUpperCase());
+        }
+
+        // Prepare datasets for the service counts (bars)
+        const datasets = services.map((service, index) => ({
+            label: formatLabel(service), // Format service label
+            data: barangays.map(barangay => barangayServiceCounts[barangay][service]),
+            backgroundColor: getRandomColor(0.4), // Unique background color
+            borderColor: getRandomColor(1), // Unique border color
+            borderWidth: 1,
+            stack: 'services', // Stack services together
+            hidden: true, // Initially hidden
+        }));
+
+        // Prepare datasets for service predictions (lines)
+        const predictionDatasets = services.map((service, index) => ({
+            label: `${formatLabel(service)} Predictions`,
+            data: barangays.map((barangay, barangayIndex) => {
+                const predictions = servicePredictions[barangay][service];
+                if (typeof predictions === 'object' && predictions !== null) {
+                    const smoothedValues = Object.values(predictions).slice(-3); // Use last 3 values
+                    const avgPrediction = smoothedValues.reduce((a, b) => a + b, 0) / smoothedValues.length || 0;
+                    return avgPrediction * (1 + 0.1 * (barangayIndex % 3)); // Add slight adjustment for differentiation
+                }
+                return 0; // Default prediction
+            }),
+            type: 'line', // Use line type for predictions
+            borderColor: getRandomColor(1), // Unique line color
+            backgroundColor: 'transparent', // Ensure no fill for line datasets
+            borderWidth: 2,
+            hidden: true, // Initially hidden
+        }));
+
+        // Render the chart
+        const ctxServices = document.getElementById('barangayServiceChart').getContext('2d');
+        const barangayServiceChart = new Chart(ctxServices, {
+            type: 'bar', // Base chart type
+            data: {
+                labels: barangays,
+                datasets: [...datasets, ...predictionDatasets],
             },
-            y: {
-                beginAtZero: true,
-                title: {
-                    display: true,
-                    text: 'Number of Services',
-                },
-            },
-        },
-        plugins: {
-            legend: {
-                display: true,
-                position: 'top',
-                labels: {
-                    font: {
-                        size: 12,
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        stacked: true, // Stack bar datasets
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Number of Services',
+                        },
                     },
                 },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            font: {
+                                size: 12,
+                            },
+                        },
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false, // Ensure tooltips don't overlap datasets
+                    },
+                    title: {
+                        display: true,
+                        text: 'Services and Predictions per Barangay',
+                    },
+                },
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
             },
-            tooltip: {
-                mode: 'index',
-                intersect: false, // Ensure tooltips don't overlap datasets
-            },
-            title: {
-                display: true,
-                text: 'Services and Predictions per Barangay',
-            },
-        },
-        interaction: {
-            mode: 'index',
-            intersect: false,
-        },
-    },
-});
+        });
 
 
         // Prepare data for average income and predictions

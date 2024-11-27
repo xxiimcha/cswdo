@@ -7,6 +7,9 @@ use App\Models\FamilyMember;
 use App\Models\Social;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Storage;
+use App\Models\Report;
 
 class HomeController extends Controller
 {
@@ -242,52 +245,6 @@ class HomeController extends Controller
         return response()->json(['clients' => $clients]);
     }
 
-    /*    public function getMostRequestedServices(Request $request)
-    {
-        $barangay = $request->input('barangay');
-
-        // Fetch the most requested services
-        $mostRequestedServices = DB::table('clients')
-            ->select(DB::raw('JSON_UNQUOTE(service_name) AS service, COUNT(*) as count'))
-            ->join(DB::raw('(SELECT id, JSON_UNQUOTE(JSON_EXTRACT(services, "$[*]")) AS service_name FROM clients WHERE barangay = ?) AS service_table'), 'clients.id', '=', 'service_table.id')
-            ->groupBy('service')
-            ->orderBy('count', 'DESC')
-            ->limit(5)
-            ->setBindings([$barangay])
-            ->get();
-
-        // Define the mapping of raw services to service names
-        $requirements = [
-            'Burial Assistance' => ['Burial', 'Financial', 'Valid ID', 'Barangay Clearance.', 'Medical Certificate.', 'Incident Report.', 'Funeral Contract.', 'Death Certificate.'],
-            'Crisis Intervention Unit' => ['Valid ID', 'Residence Certificate Or Barangay Clearance', 'Clinical Abstract/Medical Certificate', 'Police Report Or Incident Report', 'Funeral Contract And Registered Death Certificate. (if Applicable)', 'Electric Fan'],
-            'Solo Parent Services' => ['Solo Parent = Agency Referral', 'Residency Cert.', 'Medical Cert.', 'Billing Proof', 'Birth Cert.', 'ID Copy', 'Senior Citizen ID (60+)'],
-            'Pre-marriage Counseling' => ['Pre-marriage Counseling = Valid ID', 'Birth Certificate', 'CENOMAR', 'Barangay Clearance', 'Passport-sized Photos'],
-            'After-Care Services' => ['After-Care Services = Valid ID', 'Birth Certificate.', 'Residence Certificate.', 'SCSR', 'Medical Records'],
-            'Poverty Alleviation Program' => ['Poverty Alleviation Program = Valid ID', 'Residence Certificate', 'Income Certificate', 'SCSR.', 'Application Form'],
-        ];
-
-        // Transform the most requested services
-        $requestedServices = $mostRequestedServices->map(function ($serviceCount) use ($requirements) {
-            $serviceArray = json_decode($serviceCount->service); // Decode the JSON array
-            $matchedService = null;
-
-            // Check for service requirements
-            foreach ($requirements as $serviceName => $req) {
-                // Check if any requirement is present in the service array
-                if (array_intersect($req, $serviceArray)) {
-                    $matchedService = $serviceName;
-                    break;
-                }
-            }
-
-            // Set the matched service or keep the original if not matched
-            $serviceCount->service = $matchedService ?? $serviceCount->service;
-            return $serviceCount;
-        });
-
-        return response()->json($requestedServices);
-    }
- */
     public function getMostRequestedServices(Request $request)
     {
         $barangay = $request->input('barangay');
@@ -413,6 +370,162 @@ class HomeController extends Controller
         return response()->json($ageGroups);
     }
 
+    public function getReportData()
+    {
+        // The same data preparation logic from the index() method
+        $totalClients = Client::count();
+        $totalFamilyMembers = FamilyMember::count();
+        $currentYear = date('Y');
+        $previousYear = $currentYear - 1;
+
+        $clientsLastYear = Client::whereYear('created_at', $previousYear)->get();
+        $monthlyData = $clientsLastYear->groupBy(function ($date) {
+            return $date->created_at->format('m'); // Group by month
+        });
+
+        $monthlyAverages = [];
+        for ($month = 1; $month <= 12; $month++) {
+            $monthlyCount = $monthlyData->has(str_pad($month, 2, '0', STR_PAD_LEFT)) ? $monthlyData[str_pad($month, 2, '0', STR_PAD_LEFT)]->count() : 0;
+            $monthlyAverages[] = $monthlyCount;
+        }
+        $totalMonthlyClients = array_sum($monthlyAverages);
+        $monthly_average = count($monthlyAverages) > 0 ? $totalMonthlyClients / count($monthlyAverages) : 0;
+        $predictedClients = intval($monthly_average * 12);
+
+        $barangays = [
+            'Bagumbayan',
+            'Bambang',
+            'Calzada',
+            'Cembo',
+            'Central Bicutan',
+            'Central Signal Village',
+            'Comembo',
+            'East Rembo',
+            'Fort Bonifacio',
+            'Hagonoy',
+            'Ibayo-Tipas',
+            'Katuparan',
+            'Ligid-Tipas',
+            'Lower Bicutan',
+            'Maharlika Village',
+            'Napindan',
+            'New Lower Bicutan',
+            'North Daang Hari',
+            'North Signal Village',
+            'Rizal',
+            'Palingon',
+            'Pembo',
+            'Pinagsama',
+            'Pitogo',
+            'Post Proper Northside',
+            'Post Proper Southside',
+            'San Miguel',
+            'Santa Ana',
+            'South Daang Hari',
+            'South Signal Village',
+            'South Cembo',
+            'Tuktukan',
+            'Tanyag',
+            'Upper Bicutan',
+            'Ususan',
+            'Wawa',
+            'Western Bicutan',
+            'West Rembo',
+        ];
+
+        // Services and Predictions
+        $services = [
+            'Burial Assistance',
+            'Crisis Intervention Unit',
+            'Solo Parent Services',
+            'Pre-marriage Counseling',
+            'After-Care Services',
+            'Poverty Alleviation Program',
+        ];
+
+        $servicePredictions = [];
+        $barangayServiceCounts = [];
+
+        foreach ($barangays as $barangay) {
+            foreach ($services as $service) {
+                $clientsLastYearWithService = Client::where('barangay', $barangay)
+                    ->where('services', 'LIKE', '%' . $service . '%')
+                    ->whereYear('created_at', $previousYear)
+                    ->get();
+
+                $monthlyData = $clientsLastYearWithService->groupBy(function ($date) {
+                    return $date->created_at->format('m');
+                });
+
+                $monthlyAverages = [];
+                for ($month = 1; $month <= 12; $month++) {
+                    $monthlyCount = $monthlyData->has(str_pad($month, 2, '0', STR_PAD_LEFT)) ? $monthlyData[str_pad($month, 2, '0', STR_PAD_LEFT)]->count() : 0;
+                    $monthlyAverages[] = $monthlyCount;
+                }
+
+                $totalMonthlyClients = array_sum($monthlyAverages);
+                $monthlyAverage = count($monthlyAverages) > 0 ? $totalMonthlyClients / count($monthlyAverages) : 0;
+
+                $barangayServiceCounts[$barangay][$service] = $totalMonthlyClients;
+
+                $predictedNextYears = [];
+                for ($year = 1; $year <= 3; $year++) {
+                    $predictedNextYears[$year] = intval($monthlyAverage * 12);
+                }
+
+                $servicePredictions[$barangay][$service] = $predictedNextYears;
+            }
+        }
+
+        $completedClients = Client::where('problem_identification', 'Done')
+            ->where('data_gather', 'Done')
+            ->where('assessment', 'Done')
+            ->where('eval', 'Done')
+            ->count();
+        $incompleteClients = Client::where(function ($query) {
+            $query->where('problem_identification', '!=', 'Done')
+                ->orWhere('data_gather', '!=', 'Done')
+                ->orWhere('assessment', '!=', 'Done')
+                ->orWhere('eval', '!=', 'Done');
+        })->count();
+        $closedClients = Client::where('tracking', '=', 'Approve')->count();
+        $ongoingClients = Client::where('tracking', '=', 'Re-access')->count();
+        $totalSocialWorkers = Social::where('role', 'social-worker')->count();
+
+        return compact(
+            'totalClients',
+            'closedClients',
+            'ongoingClients',
+            'servicePredictions',
+            'totalFamilyMembers',
+            'totalSocialWorkers',
+            'barangays',
+            'predictedClients',
+            'monthly_average',
+            'barangayServiceCounts',
+            'services'
+        );
+    }
+
+    public function generatePDF()
+    {
+        $data = $this->getReportData();
+
+        // Generate the PDF and save it to storage
+        $pdf = Pdf::loadView('reports.report', $data);
+        $filePath = 'reports/' . now()->format('Y-m-d_H-i-s') . '_report.pdf';
+        Storage::put($filePath, $pdf->output());
+
+        // Save the report to the database
+        Report::create([
+            'title' => 'Generated Report - ' . now()->format('Y-m-d H:i:s'),
+            'description' => 'This is a system-generated report.',
+            'file_path' => $filePath,
+            'status' => 'active',
+        ]);
+
+        return redirect()->route('reports.index')->with('success', 'Report generated successfully!');
+    }
 
     public function blank()
     {
