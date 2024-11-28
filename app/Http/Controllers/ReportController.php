@@ -18,6 +18,10 @@ class ReportController extends Controller
     {
         return view('reports.create');
     }
+    public function show(Report $report)
+    {
+        return view('reports.show', compact('report'));
+    }
 
     public function store(Request $request)
     {

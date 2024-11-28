@@ -85,6 +85,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('reports/{report}/download', [ReportController::class, 'download'])->name('reports.download');
     Route::get('/generate-pdf-report', [HomeController::class, 'generatePDF'])->name('generate.pdf');
 
+    Route::get('reports/{report}', [ReportController::class, 'show'])->name('reports.show');
+
     // managing admin account
     Route::get('/admin', [SocialWorkerAccountController::class, 'index'])
         ->name('admin.index')

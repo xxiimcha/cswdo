@@ -64,42 +64,47 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (json_decode($averageIncomeData, true) as $barangay => $income)
-                <tr>
-                    <td>{{ $barangay }}</td>
-                    <td>₱{{ number_format($income, 2) }}</td>
-                </tr>
-                @endforeach
+                @if (!empty($averageIncomeData))
+                    @foreach (json_decode($averageIncomeData, true) as $barangay => $income)
+                        <tr>
+                            <td>{{ $barangay }}</td>
+                            <td>₱{{ number_format($income, 2) }}</td>
+                        </tr>
+                    @endforeach
+                @else
+                    <tr>
+                        <td colspan="2">No data available</td>
+                    </tr>
+                @endif
             </tbody>
         </table>
     </div>
 
     <div>
         <h2 class="section-title">Predictive Analytics Summary</h2>
+        @foreach ($servicePredictions as $barangay => $services)
+        <h3>{{ $barangay }}</h3>
         <table>
             <thead>
                 <tr>
-                    <th>Barangay</th>
                     <th>Service</th>
                     <th>Predicted Next 3 Years</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach ($servicePredictions as $barangay => $services)
-                    @foreach ($services as $service => $predictions)
-                    <tr>
-                        <td>{{ $barangay }}</td>
-                        <td>{{ $service }}</td>
-                        <td>
-                            Year 1: {{ $predictions[1] }},
-                            Year 2: {{ $predictions[2] }},
-                            Year 3: {{ $predictions[3] }}
-                        </td>
-                    </tr>
-                    @endforeach
+                @foreach ($services as $service => $predictions)
+                <tr>
+                    <td>{{ $service }}</td>
+                    <td>
+                        Year 1: {{ $predictions[1] }},
+                        Year 2: {{ $predictions[2] }},
+                        Year 3: {{ $predictions[3] }}
+                    </td>
+                </tr>
                 @endforeach
             </tbody>
         </table>
+        @endforeach
     </div>
 
     <div>

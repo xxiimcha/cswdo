@@ -372,26 +372,39 @@ class HomeController extends Controller
 
     public function getReportData()
     {
-        // The same data preparation logic from the index() method
+        // Fetch general statistics
         $totalClients = Client::count();
         $totalFamilyMembers = FamilyMember::count();
         $currentYear = date('Y');
         $previousYear = $currentYear - 1;
 
+        $ongoingClients = Client::where('tracking', '=', 'Re-access')->count();
+        $closedClients = Client::where('tracking', '=', 'Approve')->count();
+
+        // Fetch client data for the previous year
         $clientsLastYear = Client::whereYear('created_at', $previousYear)->get();
+
+        // Group client data by month
         $monthlyData = $clientsLastYear->groupBy(function ($date) {
-            return $date->created_at->format('m'); // Group by month
+            return $date->created_at->format('m'); // Group by month (e.g., 01, 02, etc.)
         });
 
+        // Calculate monthly averages
         $monthlyAverages = [];
         for ($month = 1; $month <= 12; $month++) {
-            $monthlyCount = $monthlyData->has(str_pad($month, 2, '0', STR_PAD_LEFT)) ? $monthlyData[str_pad($month, 2, '0', STR_PAD_LEFT)]->count() : 0;
+            $monthlyKey = str_pad($month, 2, '0', STR_PAD_LEFT); // Convert to two-digit format
+            $monthlyCount = $monthlyData->has($monthlyKey) ? $monthlyData[$monthlyKey]->count() : 0;
             $monthlyAverages[] = $monthlyCount;
         }
+
+        // Calculate total monthly clients and the overall average
         $totalMonthlyClients = array_sum($monthlyAverages);
         $monthly_average = count($monthlyAverages) > 0 ? $totalMonthlyClients / count($monthlyAverages) : 0;
+
+        // Predict total clients for the next year based on the monthly average
         $predictedClients = intval($monthly_average * 12);
 
+        // Barangay list
         $barangays = [
             'Bagumbayan',
             'Bambang',
@@ -433,7 +446,49 @@ class HomeController extends Controller
             'West Rembo',
         ];
 
-        // Services and Predictions
+        // Income ranges and their corresponding values
+        $incomeRanges = [
+            'No Income' => 0,
+            '100 PHP - 500 PHP' => 300,
+            '500 PHP - 1000 PHP' => 750,
+            '1000 PHP - 2000 PHP' => 1500,
+            '2000 PHP - 5000 PHP' => 3500,
+            '5000 PHP - 6000 PHP' => 5500,
+            '6000 PHP - 7000 PHP' => 6500,
+            '7000 PHP - 8000 PHP' => 7500,
+            '8000 PHP - 9000 PHP' => 8500,
+            '9000 PHP - 10,000 PHP' => 9500,
+            'Above 20,000 PHP' => 20000,
+        ];
+
+        // Initialize variables for storing income totals and counts
+        $barangayIncomeTotals = [];
+        $barangayIncomeCounts = [];
+
+        // Iterate through barangays to calculate income totals and averages
+        foreach ($barangays as $barangay) {
+            $clientsInBarangay = Client::where('barangay', $barangay)->get();
+            foreach ($clientsInBarangay as $client) {
+                $incomeRange = $client->monthly_income;
+                $income = isset($incomeRanges[$incomeRange]) ? $incomeRanges[$incomeRange] : 0;
+
+                if (!isset($barangayIncomeTotals[$barangay])) {
+                    $barangayIncomeTotals[$barangay] = 0;
+                    $barangayIncomeCounts[$barangay] = 0;
+                }
+
+                $barangayIncomeTotals[$barangay] += $income;
+                $barangayIncomeCounts[$barangay]++;
+            }
+        }
+
+        // Calculate average income for each barangay
+        $barangayAverageIncome = [];
+        foreach ($barangayIncomeTotals as $barangay => $total) {
+            $average = $barangayIncomeCounts[$barangay] > 0 ? $total / $barangayIncomeCounts[$barangay] : 0;
+            $barangayAverageIncome[$barangay] = $average;
+        }
+
         $services = [
             'Burial Assistance',
             'Crisis Intervention Unit',
@@ -444,10 +499,9 @@ class HomeController extends Controller
         ];
 
         $servicePredictions = [];
-        $barangayServiceCounts = [];
-
         foreach ($barangays as $barangay) {
             foreach ($services as $service) {
+                // Collect data for predictions (e.g., from previous year's data)
                 $clientsLastYearWithService = Client::where('barangay', $barangay)
                     ->where('services', 'LIKE', '%' . $service . '%')
                     ->whereYear('created_at', $previousYear)
@@ -466,8 +520,6 @@ class HomeController extends Controller
                 $totalMonthlyClients = array_sum($monthlyAverages);
                 $monthlyAverage = count($monthlyAverages) > 0 ? $totalMonthlyClients / count($monthlyAverages) : 0;
 
-                $barangayServiceCounts[$barangay][$service] = $totalMonthlyClients;
-
                 $predictedNextYears = [];
                 for ($year = 1; $year <= 3; $year++) {
                     $predictedNextYears[$year] = intval($monthlyAverage * 12);
@@ -477,46 +529,35 @@ class HomeController extends Controller
             }
         }
 
-        $completedClients = Client::where('problem_identification', 'Done')
-            ->where('data_gather', 'Done')
-            ->where('assessment', 'Done')
-            ->where('eval', 'Done')
-            ->count();
-        $incompleteClients = Client::where(function ($query) {
-            $query->where('problem_identification', '!=', 'Done')
-                ->orWhere('data_gather', '!=', 'Done')
-                ->orWhere('assessment', '!=', 'Done')
-                ->orWhere('eval', '!=', 'Done');
-        })->count();
-        $closedClients = Client::where('tracking', '=', 'Approve')->count();
-        $ongoingClients = Client::where('tracking', '=', 'Re-access')->count();
-        $totalSocialWorkers = Social::where('role', 'social-worker')->count();
+        // Encode average income data to JSON for easy usage in views
+        $averageIncomeData = json_encode($barangayAverageIncome);
 
+        // Return all data as an array for use in the PDF report generation
         return compact(
             'totalClients',
+            'totalFamilyMembers',
+            'barangays',
+            'services',
+            'servicePredictions',
             'closedClients',
             'ongoingClients',
-            'servicePredictions',
-            'totalFamilyMembers',
-            'totalSocialWorkers',
-            'barangays',
-            'predictedClients',
-            'monthly_average',
-            'barangayServiceCounts',
-            'services'
+            'averageIncomeData'
         );
     }
+
 
     public function generatePDF()
     {
         $data = $this->getReportData();
 
-        // Generate the PDF and save it to storage
+        // Generate the PDF using the data
         $pdf = Pdf::loadView('reports.report', $data);
+
+        // Save PDF to storage
         $filePath = 'reports/' . now()->format('Y-m-d_H-i-s') . '_report.pdf';
         Storage::put($filePath, $pdf->output());
 
-        // Save the report to the database
+        // Save the report record to the database
         Report::create([
             'title' => 'Generated Report - ' . now()->format('Y-m-d H:i:s'),
             'description' => 'This is a system-generated report.',
