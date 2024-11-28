@@ -550,16 +550,19 @@ class HomeController extends Controller
     {
         $data = $this->getReportData();
 
+        // Set timezone to Manila (Asia/Manila)
+        $manilaTime = now()->setTimezone('Asia/Manila');
+
         // Generate the PDF using the data
         $pdf = Pdf::loadView('reports.report', $data);
 
-        // Save PDF to storage
-        $filePath = 'reports/' . now()->format('Y-m-d_H-i-s') . '_report.pdf';
+        // Save PDF to storage with Manila time
+        $filePath = 'reports/' . $manilaTime->format('Y-m-d_H-i-s') . '_report.pdf';
         Storage::put($filePath, $pdf->output());
 
-        // Save the report record to the database
+        // Save the report record to the database with Manila time
         Report::create([
-            'title' => 'Generated Report - ' . now()->format('Y-m-d H:i:s'),
+            'title' => 'Generated Report - ' . $manilaTime->format('Y-m-d H:i:s'),
             'description' => 'This is a system-generated report.',
             'file_path' => $filePath,
             'status' => 'active',

@@ -31,9 +31,7 @@
                                 <th>Contact Number</th>
                                 <th>Case Status</th>
                                 <th>Assigned Officer</th>
-                                <th>View</th>
-                                <th>Family Member</th>
-                                <th>Edit</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="searchResults">
@@ -52,31 +50,41 @@
                                 <td class="contact-number">{{ $client->contact_number }}</td>
                                 <td class="case-status">
                                     <span style="background-color: {{ $client->tracking == 'Re-access' ? 'orange' : ($client->tracking == 'Approve' ? 'green' : 'transparent') }};
-                                          color: white; padding: 2px 4px; border-radius: 4px;">
+                                                  color: white; padding: 2px 4px; border-radius: 4px;">
                                         {{ $client->tracking == 'Re-access' ? 'Ongoing' : ($client->tracking == 'Approve' ? 'Closed' : $client->tracking) }}
                                     </span>
                                 </td>
                                 <td>{{ $client->reviewing }}</td>
                                 <td>
-                                    <button type="button" class="btn btn-success" data-toggle="modal" data-target="#viewClientModal{{ $client->id }}">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                </td>
-                                <td>
-                                    <button type="button" class="btn btn-info" data-toggle="modal" data-target="#familyMembersModal{{ $client->id }}">
-                                        <i class="fas fa-user-edit"></i>
-                                    </button>
-                                </td>
-                                <td>
-                                    <button class="btn btn-primary" data-toggle="modal" data-target="#openEditModal{{ $client->id }}">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
+                                    <div class="dropdown">
+                                        <button class="btn btn-secondary dropdown-toggle" type="button" id="actionMenuButton{{ $client->id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                            Actions
+                                        </button>
+                                        <ul class="dropdown-menu" aria-labelledby="actionMenuButton{{ $client->id }}">
+                                            <li>
+                                                <button type="button" class="dropdown-item" data-toggle="modal" data-target="#viewClientModal{{ $client->id }}">
+                                                    <i class="fas fa-eye"></i> View
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button type="button" class="dropdown-item" data-toggle="modal" data-target="#familyMembersModal{{ $client->id }}">
+                                                    <i class="fas fa-user-edit"></i> Family Member
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button class="dropdown-item" data-toggle="modal" data-target="#openEditModal{{ $client->id }}">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </button>
+                                            </li>
+                                        </ul>
+                                    </div>
                                 </td>
                             </tr>
                             @endforeach
                         </tbody>
                     </table>
                 </div>
+
                 <!-- Pagination Controls -->
                 <div id="paginationControls" class="mt-3 d-flex justify-content-between align-items-center">
                     <div>
@@ -305,20 +313,38 @@
 
 						<div class="row mb-2">
 							<div class="col-md-6"><strong>Appliances:</strong> {{ $client->appliances }}</div>
-							<div class="col-md-6"><strong>Monthly Expenses:</strong> @php
-								$expenses = json_decode($client->monthly_expenses, true); // Decode JSON data into an associative array
-								@endphp
+							<div class="col-md-6">
+                                <strong>Monthly Expenses:</strong>
+                                @php
+                                    $expenses = json_decode($client->monthly_expenses, true); // Decode JSON data into an associative array
+                                @endphp
 
-								@if(is_array($expenses))
-								@foreach($expenses as $key => $value)
-								@if($value) <!-- Check if value is not empty -->
-								<div>{{ $key }} - {{ $value }}</div>
-								@endif
-								@endforeach
-								@else
-								<div>No expenses data available.</div>
-								@endif
-							</div>
+                                @if (is_array($expenses) && count($expenses) > 0)
+                                <div class="table-responsive mt-2">
+                                    <table class="table table-bordered table-striped">
+                                        <thead class="table-primary">
+                                            <tr>
+                                                <th>Expense Type</th>
+                                                <th>Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($expenses as $key => $value)
+                                                @if (!empty($value)) <!-- Check if value is not empty -->
+                                                    <tr>
+                                                        <td>{{ ucfirst($key) }}</td>
+                                                        <td>₱{{ number_format((float)$value, 2) }}</td> <!-- Cast to float -->
+                                                    </tr>
+                                                @endif
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                                @else
+                                    <div class="text-muted mt-2">No expenses data available.</div>
+                                @endif
+                            </div>
+
 						</div>
 
 
