@@ -51,7 +51,6 @@
                                         @if ($report->file_path)
                                             <a href="{{ route('reports.download', $report) }}" class="btn btn-sm btn-success">Download</a>
                                         @endif
-                                        <a href="{{ route('reports.show', $report) }}" class="btn btn-sm btn-info">View</a>
                                         @if ($report->status === 'active')
                                             <form action="{{ route('reports.archive', $report) }}" method="POST" class="d-inline">
                                                 @csrf
@@ -92,7 +91,6 @@
                                         @if ($report->file_path)
                                             <a href="{{ route('reports.download', $report) }}" class="btn btn-sm btn-success">Download</a>
                                         @endif
-                                        <a href="{{ route('reports.show', $report) }}" class="btn btn-sm btn-info">View</a>
                                         <form action="{{ route('reports.archive', $report) }}" method="POST" class="d-inline">
                                             @csrf
                                             @method('PATCH')
@@ -131,7 +129,6 @@
                                         @if ($report->file_path)
                                             <a href="{{ route('reports.download', $report) }}" class="btn btn-sm btn-success">Download</a>
                                         @endif
-                                        <a href="{{ route('reports.show', $report) }}" class="btn btn-sm btn-info">View</a>
                                     </td>
                                 </tr>
                             @endforeach
